@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propuesta Comercial - Bolsaqueta</title>
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    <!-- Leaflet Map JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- 1. AUTH / LOGIN PAGE -->
+    <div id="auth-page" class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="logo-icon">B</div>
+                <div class="logo-text">Bolsaqueta</div>
+            </div>
+            <div class="auth-header">
+                <h2>Iniciar Sesión</h2>
+                <p>Ingresa al panel del sistema de logística</p>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Usuario / Correo</label>
+                    <input type="text" id="username" class="form-input" placeholder="admin@bolsaqueta.com" value="admin@bolsaqueta.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" value="admin123" required>
+                </div>
+                <button type="submit" class="auth-btn">Acceder al Sistema</button>
+            </form>
+            <p class="demo-hint">** Modo Demostración Técnica (Usa cualquier usuario/clave para ingresar) **</p>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APPLICATION PAGE -->
+    <div id="app-page" class="app-container" style="display: none;">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">B</div>
+                <div class="logo-text">Bolsaqueta</div>
+            </div>
+            <nav>
+                <ul class="menu-list">
+                    <li class="menu-item active" data-target="tab-dashboard">
+                        <span>Dashboard General</span>
+                    </li>
+                    <li class="menu-item" data-target="tab-lotes">
+                        <span>Creación de Lotes</span>
+                    </li>
+                    <li class="menu-item" data-target="tab-chofer">
+                        <span>Vista del Chofer</span>
+                    </li>
+                    <li class="menu-item" data-target="tab-chatbot">
+                        <span>Asistente de IA (Chatbot)</span>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <span>Versión Demo 1.0</span>
+                <span class="logout-btn" title="Cerrar Sesión">Salir</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-title">
+                    <h1 id="view-title">Ecosistema Logístico Inteligente</h1>
+                    <p id="view-subtitle">Monitoreo de recogida de bolsones y ruteo automático</p>
+                </div>
+                <div class="user-profile">
+                    <div class="user-info">
+                        <div class="user-name">Administrador</div>
+                        <div class="user-role">Oficina Central</div>
+                    </div>
+                    <div class="user-avatar">A</div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-body">
+                
+                <!-- TAB 1: DASHBOARD VIEW -->
+                <section id="tab-dashboard" class="view-section active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>Total Bolsones</h3>
+                                <div class="stat-value" id="stat-total">0</div>
+                            </div>
+                            <div class="stat-icon" style="font-size: 14px; font-weight: 700;">TOT</div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="stat-info">
+                                <h3>Recogidos</h3>
+                                <div class="stat-value" id="stat-completed">0</div>
+                            </div>
+                            <div class="stat-icon" style="font-size: 14px; font-weight: 700;">REC</div>
+                        </div>
+                        <div class="stat-card warning">
+                            <div class="stat-info">
+                                <h3>Pendientes</h3>
+                                <div class="stat-value" id="stat-pending">0</div>
+                            </div>
+                            <div class="stat-icon" style="font-size: 14px; font-weight: 700;">PEN</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="stat-info">
+                                <h3>Multas / Retraso</h3>
+                                <div class="stat-value" id="stat-danger">0</div>
+                            </div>
+                            <div class="stat-icon" style="font-size: 14px; font-weight: 700;">MUL</div>
+                        </div>
+                    </div>
+
+                    <!-- Map & Add Service form -->
+                    <div class="dashboard-layout">
+                        <!-- Leaflet Map Panel -->
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h2>Mapa de Ubicación de Bolsones (Montevideo)</h2>
+                            </div>
+                            <div id="leaflet-map" class="map-container"></div>
+                        </div>
+
+                        <!-- Manual Registration Panel -->
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h2>Registrar Nuevo Bolsón (Manualmente)</h2>
+                            </div>
+                            <form id="add-service-form" class="form-grid">
+                                <div class="form-group form-full">
+                                    <label for="input-client">Nombre del Cliente / Responsable</label>
+                                    <input type="text" id="input-client" class="form-input" placeholder="Ej. Juan Pérez" required>
+                                </div>
+                                <div class="form-group form-full">
+                                    <label for="input-address">Dirección Exacta</label>
+                                    <input type="text" id="input-address" class="form-input" placeholder="Ej. Av. Italia 2800, Montevideo" required>
+                                </div>
+                                <div class="form-group form-full">
+                                    <label for="input-deadline">Plazo Límite de Recogida (Horas antes de multa)</label>
+                                    <select id="input-deadline" class="form-input">
+                                        <option value="12">12 Horas (Prioridad Alta)</option>
+                                        <option value="24" selected>24 Horas (Plazo Estándar)</option>
+                                        <option value="48">48 Horas (Plazo Amplio)</option>
+                                        <option value="6">6 Horas (Crítico / Vencimiento)</option>
+                                    </select>
+                                </div>
+                                <div class="form-full" style="text-align: right; margin-top: 10px;">
+                                    <button type="submit" class="btn btn-primary">Registrar Dirección</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Services Table list -->
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h2>Lista General de Servicios</h2>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table" id="services-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Dirección</th>
+                                        <th>Plazo Límite (Deadline)</th>
+                                        <th>Origen</th>
+                                        <th>Estado</th>
+                                        <th>Chofer Asignado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic rows from app.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: OPTIMIZATION VIEW -->
+                <section id="tab-lotes" class="view-section">
+                    <div class="dashboard-layout">
+                        <!-- Route Planning controls -->
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <h2>Configuración de Lotes Inteligentes</h2>
+                            </div>
+                            <div class="optimization-control">
+                                <p style="font-size: 14px; color: var(--text-muted);">
+                                    Selecciona el número de choferes disponibles hoy. El motor inteligente agrupará geográficamente todos los bolsones pendientes y ordenará la ruta de cada conductor para minimizar tiempo y combustible.
+                                </p>
+                                <div class="control-row">
+                                    <label style="font-size: 14px; font-weight: 600;">Cantidad de Lotes (Choferes):</label>
+                                    <input type="number" id="drivers-count-input" class="number-input" min="1" max="5" value="3">
+                                </div>
+                                <button id="run-optimization-btn" class="btn btn-primary" style="justify-content: center; padding: 14px;">
+                                    Optimizar Rutas por Lotes
+                                </button>
+                                
+                                <div class="optimization-stats">
+                                    <h4 style="font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 5px;">Métricas del Recorrido Calculado:</h4>
+                                    <div id="optimization-summary-stats">
+                                        <p style="font-size: 13px; color: var(--text-muted); text-align: center;">Sin rutas calculadas aún. Haz clic en 'Optimizar Rutas'.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instructions box -->
+                        <div class="panel-card" style="padding: 24px;">
+                            <h3 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 12px;">¿Cómo funciona el motor de rutas?</h3>
+                            <ul style="font-size: 13px; color: var(--text-main); display: flex; flex-direction: column; gap: 10px; padding-left: 20px;">
+                                <li><b>Agrupamiento (K-Means):</b> Divide los bolsones en áreas geográficas coherentes, asegurando que los choferes no se crucen de un extremo a otro de la ciudad.</li>
+                                <li><b>Ordenamiento Óptimo (TSP):</b> Resuelve el problema del Viajante. Una vez definidos los bolsones de un chofer, calcula el trayecto más rápido partiendo desde el punto de partida (depósito).</li>
+                                <li><b>Prevención de Penalidades:</b> Modifica la secuencia de paradas de ser necesario para atender primero los bolsones con plazos críticos antes de la multa.</li>
+                            </ul>
+                            <div style="margin-top: 30px; padding: 15px; background-color: #ECFDF5; border-radius: var(--radius-md); border: 1px dashed var(--success); font-size: 12px; color: #065F46;">
+                                <b>Consejo:</b> Ve al panel del "Asistente de IA (Chatbot)" a registrar un pedido. Verás cómo aparece automáticamente en el panel y se recalcula en las rutas.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: DRIVER SIMULATOR VIEW -->
+                <section id="tab-chofer" class="view-section">
+                    <div class="simulator-layout">
+                        <!-- Driver selection / Controls -->
+                        <div class="panel-card driver-selection-panel">
+                            <h2 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 12px;">Simulación del Ecosistema de Choferes</h2>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+                                Selecciona el chofer que quieres simular. A la derecha verás una maqueta a escala de cómo este chofer verá su hoja de ruta digital en tiempo real en su celular en la calle.
+                            </p>
+                            
+                            <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px;">Elegir Chofer:</label>
+                            <select id="driver-select" class="driver-list-select">
+                                <option value="">-- Seleccionar Chofer --</option>
+                                <!-- Populate dynamically -->
+                            </select>
+                            
+                            <div style="padding: 16px; background-color: #EFF6FF; border-radius: var(--radius-md); font-size: 12px; color: #1E40AF; line-height: 1.5;">
+                                <b>¿Qué puede hacer el chofer?</b><br/>
+                                1. Ver su lista de paradas ordenadas de forma óptima para su día.<br/>
+                                2. Presionar "Navegar GPS" para abrir Google Maps / Waze de forma automática.<br/>
+                                3. Marcar como "Recogido", lo cual actualiza instantáneamente el Dashboard de oficina.
+                            </div>
+                        </div>
+
+                        <!-- Mobile Device Mock -->
+                        <div class="mobile-phone">
+                            <div class="phone-screen">
+                                <div class="phone-header">
+                                    <h4>Bolsaqueta Choferes</h4>
+                                    <p>Hoja de Ruta Optimizada</p>
+                                </div>
+                                <div class="phone-body" id="mobile-stops-container">
+                                    <div style="text-align: center; color: var(--text-muted); font-size: 13px; padding-top: 40px;">
+                                        Por favor, selecciona un chofer a la izquierda para iniciar la simulación.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: CHATBOT SIMULATOR VIEW -->
+                <section id="tab-chatbot" class="view-section">
+                    <div class="chat-layout">
+                        <!-- Simulated Chat Client (WhatsApp) -->
+                        <div class="chat-simulator-card">
+                            <div class="chat-simulator-header">
+                                <div class="chat-avatar">💬</div>
+                                <div class="chat-status">
+                                    <h3>Asistente de IA - Bolsaqueta</h3>
+                                    <p>En línea • Cuenta de Empresa</p>
+                                </div>
+                            </div>
+                            <div class="chat-body" id="chat-body">
+                                <div class="chat-bubble bot">
+                                    Hola. Soy el asistente virtual de recolección de bolsones de escombros de Bolsaqueta.<br/>
+                                    ¿En qué puedo ayudarte?
+                                    <div class="chat-time">10:00 AM</div>
+                                </div>
+                            </div>
+                            <div class="chat-input-area">
+                                <input type="text" id="chat-input" class="chat-input" placeholder="Escribe un mensaje aquí...">
+                                <button id="chat-send-btn" class="chat-send-btn">➤</button>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Prompts Guide -->
+                        <div class="panel-card" style="padding: 24px;">
+                            <h2 style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 12px;">Interacción con el Cliente (WhatsApp / Web)</h2>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+                                Haz clic en los botones de abajo para simular los diálogos del cliente y ver cómo responde la Inteligencia Artificial:
+                            </p>
+                            
+                            <div class="chat-demo-prompts">
+                                <button class="prompt-btn" onclick="triggerPrompt('Quiero comprar un bolsón', 1)">
+                                    <span>"Quiero comprar un bolsón"</span>
+                                    <span class="prompt-arrow">➔</span>
+                                </button>
+                                
+                                <button class="prompt-btn" onclick="triggerPrompt('Pocitos', 2)">
+                                    <span>Enviar Zona: "Pocitos"</span>
+                                    <span class="prompt-arrow">➔</span>
+                                </button>
+
+                                <button class="prompt-btn" onclick="triggerPrompt('Sí, ya compré el bolsón y quiero retirarlo', 3)">
+                                    <span>"Quiero agendar la recogida de mi bolsón"</span>
+                                    <span class="prompt-arrow">➔</span>
+                                </button>
+                                
+                                <button class="prompt-btn" onclick="triggerPrompt('Eduardo Ferreira', 4)">
+                                    <span>Enviar Nombre: "Eduardo Ferreira"</span>
+                                    <span class="prompt-arrow">➔</span>
+                                </button>
+                                
+                                <button class="prompt-btn" onclick="triggerPrompt('Av. Sarmiento 2340, Pocitos', 5)">
+                                    <span>Enviar Dirección: "Av. Sarmiento 2340, Pocitos"</span>
+                                    <span class="prompt-arrow">➔</span>
+                                </button>
+                            </div>
+
+                            <div style="margin-top: 20px; padding: 14px; background-color: #EEF2FF; border-radius: var(--radius-md); font-size: 12px; color: #3730A3;">
+                                <b>Efecto Demo:</b> Al completar los datos (Dirección), la IA creará automáticamente la recogida y la verás aparecer en la tabla de la primera pestaña de forma instantánea.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Application Script Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
